@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Beer o'clock</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+
+  <style type="text/css">
+    html,
+    body {
+      height: 100%;
+    }
+
+    .full-page {
+      height: 100vh;
+      width: 100vw;
+    }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/luxon@2.0.2/build/global/luxon.min.js"></script>
+</head>
+
+<body>
+
+  <section class="h-100">
+    <header class="container h-100">
+      <div class="d-flex align-items-center justify-content-center h-100">
+        <div class="d-flex flex-column">
+          <h1 id="result" class="text align-self-center p-2"></h1>
+        </div>
+      </div>
+    </header>
+  </section>
+
+  <script>
+    // What time is it now
+    const now = luxon.DateTime.now()
+
+    // See if a specific time was requested
+    const queryString = window.location.search
+    const urlParams = new URLSearchParams(queryString)
+    var target = urlParams.has("h") ? parseInt(urlParams.get("h")) : 17
+    if (isNaN(target) || target < 0 || target >= 24) target = 17
+
+    // Format the target hour for display
+    var rendered = ""
+    if (target == 0) rendered = "midnight"
+    else if (target == 12) rendered = "noon"
+    else if (target > 12) rendered = `${target - 12}pm`
+    else rendered = `${target}am`
+
+    // Check all the time zones
+    fetch("time-zones.txt")
+      .then(data => data.text())
+      .then(text => text.split(/\r?\n/))
+      .then(tzs => {
+        const valid = tzs.filter(tz => now.setZone(tz).hour == target)
+        if (valid.length) {
+          const selected = valid[Math.floor(Math.random() * valid.length)]
+          document.getElementById("result").innerHTML = `It is ${rendered} in the <a href="https://en.wikipedia.org/wiki/${selected}">${selected}</a> time zone`
+        } else {
+          document.getElementById("result").innerHTML = `It isn't ${rendered} anywhere (maybe the world is broken)`
+        }
+      })
+      .catch(() => {
+        document.getElementById("result").innerHTML = "Could not compute... try refreshing?"
+      })
+  </script>
+
+</body>
+
+</html>
