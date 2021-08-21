@@ -62,9 +62,9 @@
         const valid = tzs.filter(tz => now.setZone(tz).hour == target)
         if (valid.length) {
           const selected = valid[Math.floor(Math.random() * valid.length)]
-          document.getElementById("result").innerHTML = `It is ${rendered} in the <a href="https://en.wikipedia.org/wiki/${selected}">${selected}</a> time zone`
+          document.getElementById("result").innerHTML = `It is ${rendered} in the <a href="https://en.wikipedia.org/wiki/${selected}">${selected}</a> time zone.`
         } else {
-          document.getElementById("result").innerHTML = `It isn't ${rendered} anywhere (maybe the world is broken)`
+          document.getElementById("result").innerHTML = `It isn't ${rendered} anywhere (maybe the world is broken).`
         }
       })
       .catch(() => {
