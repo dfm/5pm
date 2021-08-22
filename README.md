@@ -1,3 +1,3 @@
-# beer-oclock
+# 5pm
 
 For Stefan
