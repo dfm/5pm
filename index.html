@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Beer o'clock</title>
+  <title>Where in the world is it 5pm?</title>
 
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
@@ -54,15 +54,17 @@
     else if (target > 12) rendered = `${target - 12}pm`
     else rendered = `${target}am`
 
+    // Set the title
+    document.title = `Where in the world is it ${rendered}?`
+
     // Check all the time zones
-    fetch("time-zones.txt")
-      .then(data => data.text())
-      .then(text => text.split(/\r?\n/))
+    fetch("time-zones.json")
+      .then(data => data.json())
       .then(tzs => {
-        const valid = tzs.filter(tz => now.setZone(tz).hour == target)
+        const valid = tzs.filter(tz => now.setZone(tz.zone).hour == target)
         if (valid.length) {
           const selected = valid[Math.floor(Math.random() * valid.length)]
-          document.getElementById("result").innerHTML = `It is ${rendered} in the <a href="https://en.wikipedia.org/wiki/${selected}">${selected}</a> time zone.`
+          document.getElementById("result").innerHTML = `It is ${rendered} in <a href="https://www.google.com/maps/place/${selected.name}" target="_blank">${selected.name}</a>.`
         } else {
           document.getElementById("result").innerHTML = `It isn't ${rendered} anywhere (maybe the world is broken).`
         }
