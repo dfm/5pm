@@ -19,7 +19,6 @@
 
     body {
       margin-bottom: 60px;
-      /* Margin bottom by footer height */
     }
 
     .footer {
@@ -35,6 +34,10 @@
       height: 100vh;
       width: 100vw;
     }
+
+    .cursor {
+      cursor: pointer;
+    }
   </style>
 
   <script src="https://cdn.jsdelivr.net/npm/luxon@2.0.2/build/global/luxon.min.js"></script>
@@ -46,7 +49,12 @@
     <header class="container h-100">
       <div class="d-flex align-items-center justify-content-center h-100">
         <div class="d-flex flex-column">
-          <h1 id="result" class="text align-self-center p-2"></h1>
+          <h1 id="result" class="text align-self-center p-2">...</h1>
+          <span class="text-muted align-self-center">
+            <span class="cursor" onclick="newZone()">Anywhere else?</span> /
+            <span class="cursor" onclick="deltaTime(-1)">Earlier?</span> /
+            <span class="cursor" onclick="deltaTime(1)">Later?</span>
+          </span>
         </div>
       </div>
     </header>
@@ -71,29 +79,51 @@
 
     // Format the target hour for display
     var rendered = ""
-    if (target == 0) rendered = "midnight"
-    else if (target == 12) rendered = "noon"
-    else if (target > 12) rendered = `${target - 12}pm`
-    else rendered = `${target}am`
+    const updateTarget = () => {
+      if (target == 0) rendered = "midnight"
+      else if (target == 12) rendered = "noon"
+      else if (target > 12) rendered = `${target - 12}pm`
+      else rendered = `${target}am`
+      document.title = `Where in the world is it ${rendered}?`
+    }
 
-    // Set the title
-    document.title = `Where in the world is it ${rendered}?`
+    var deltaTime = delta => {
+      target += delta
+      while (target < 0) target += 24
+      while (target >= 24) target -= 24
+      window.history.pushState({ path: `?h=${target}` }, "", `?h=${target}`)
+      updateTarget()
+      newZone()
+    }
 
-    // Check all the time zones
-    fetch("time-zones.json")
-      .then(data => data.json())
-      .then(tzs => {
-        const valid = tzs.filter(tz => now.setZone(tz.zone).hour == target)
-        if (valid.length) {
-          const selected = valid[Math.floor(Math.random() * valid.length)]
-          document.getElementById("result").innerHTML = `It is ${rendered} in <a href="https://www.google.com/maps/place/${selected.name}" target="_blank">${selected.name}</a>.`
-        } else {
-          document.getElementById("result").innerHTML = `It isn't ${rendered} anywhere (maybe the world is broken).`
-        }
-      })
-      .catch(() => {
-        document.getElementById("result").innerHTML = "Could not compute... try refreshing?"
-      })
+    // Handle the time zones
+    var timeZones = []
+    var chooseZone = tzs => {
+      const valid = tzs.filter(tz => now.setZone(tz.zone).hour == target)
+      if (valid.length) {
+        const selected = valid[Math.floor(Math.random() * valid.length)]
+        document.getElementById("result").innerHTML = `It is ${rendered} in <a href="https://www.google.com/maps/place/${selected.name}" target="_blank">${selected.name}</a>.`
+      } else {
+        document.getElementById("result").innerHTML = `It isn't ${rendered} anywhere (maybe the world is broken).`
+      }
+    }
+    var fetchZones = () => {
+      fetch("time-zones.json")
+        .then(data => data.json())
+        .then(json => timeZones = json)
+        .then(chooseZone)
+        .catch(() => {
+          document.getElementById("result").innerHTML = "Could not compute... try refreshing?"
+        })
+    }
+
+    var newZone = () => {
+      if (timeZones.length == 0) fetchZones()
+      else chooseZone(timeZones)
+    }
+
+    updateTarget()
+    fetchZones()
   </script>
 
 </body>
