@@ -1,3 +1,3 @@
-# 5pm
+# Where in the world is it 5pm?
 
-For Stefan
+Made for Stefan who hates time zones.
